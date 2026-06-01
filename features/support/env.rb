@@ -36,7 +36,7 @@ def browser_setup(browser = 'firefox')
   else
     Capybara.register_driver :firefox_driver do |app|
       profile = Selenium::WebDriver::Firefox::Profile.new
-      Selenium::WebDriver::Firefox.driver_path = 'configuration/geckodriver'
+      Selenium::WebDriver::Firefox::Service.driver_path = 'configuration/geckodriver'
       profile['browser.download.folderList'] = 2 # custom location
       profile['browser.download.dir'] = Dir.pwd + '/features/tmp/'
       profile['browser.helperApps.neverAsk.saveToDisk'] = 'application/octet-stream, text/xml'
@@ -46,7 +46,7 @@ def browser_setup(browser = 'firefox')
     Capybara.default_driver = :firefox_driver
   end
 end
-browser_setup('chrome')
+browser_setup('firefox')
 
 configuration = YAML.load_file 'configuration/default.yml'
 $rest_wrap = RestWrapper.new url: 'https://testing4qa.ediweb.ru/api',

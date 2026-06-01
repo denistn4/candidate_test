@@ -9,7 +9,7 @@ end
 
 When(/^проверяю (наличие|отсутствие) логина (\w+\.\w+) в списке пользователей$/) do |presence, login|
   search_login_in_list = true
-  presence == 'отсутствие' ? search_login_in_list = !search_login_in_list : search_login_in_list
+  search_login_in_list = presence == 'отсутствие' ? false : true
 
   logins_from_site = @scenario_data.users_full_info.map { |f| f.try(:[], 'login') }
   login_presents = logins_from_site.include?(login)
@@ -54,4 +54,52 @@ When(/^нахожу пользователя с логином (\w+\.\w+)$/) do 
   end
 
   $logger.info("Найден пользователь #{login} с id:#{@scenario_data.users_id[login]}")
+  sleep 1
+end
+
+
+When (/^удаляю пользователя (\w+\.\w+) по логину$/) do |login|
+  step %(нахожу пользователя с логином #{login})
+  user_id = @scenario_data.users_id[login]
+  if user_id.nil?
+    $logger.error("Не найден пользователь с логином #{login}")
+    next
+  end
+  response = $rest_wrap.delete("/users/#{user_id}")
+  $logger.info("Удален пользователь #{login} с id #{user_id} #{response}")
+  sleep 1
+  end
+
+When(/^изменяю доступные параметры пользователя (\w+\.\w+) по логину на:$/) do |login, data_table|
+  user_data = data_table.raw
+  step %(нахожу пользователя с логином #{login})
+  user_id = @scenario_data.users_id[login]
+  if user_id.nil?
+    $logger.error("Не найден пользователь с логином #{login}")
+    next
+  end
+  name = user_data[0][1]
+  surname = user_data[1][1]
+  password = user_data[2][1]
+
+  response = $rest_wrap.put("/users/#{user_id}", {
+    name: name,
+    surname: surname,
+    password: password,
+    active: 1
+  })
+  $logger.info("Данные пользователя #{login} обновлены #{response}")
+  sleep 1
+end
+
+When(/^смотрю новые данные пользователя с логином (\w+\.\w+)$/) do |login|
+  step %(нахожу пользователя с логином #{login})
+  user_id = @scenario_data.users_id[login]
+  if user_id.nil?
+    $logger.error("Пользователь с логином #{login} не найден")
+    next
+  end
+  response = $rest_wrap.get("/users/#{user_id}")
+  $logger.info("Новые данные пользователя #{login}: #{response}")
+  sleep 1
 end
