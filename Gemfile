@@ -9,3 +9,5 @@ gem 'psych'
 gem 'rest-client'
 gem 'rspec', '~> 3.5'
 gem 'selenium-webdriver', '3.142.7'
+
+gem 'webdrivers', "~> 4.7"

@@ -103,3 +103,66 @@ When(/^смотрю новые данные пользователя с логи
   $logger.info("Новые данные пользователя #{login}: #{response}")
   sleep 1
 end
+
+When(/добавляю уже существующего пользователя с логином (\w+\.\w+) именем (\w+) фамилией (\w+) паролем ([\d\w@!#]+)$/) do |login, name, surname, password|
+  response = $rest_wrap.post('/users', login: login,
+                             name: name,
+                             surname: surname,
+                             password: password,
+                             active: 1)
+  expect(response.inspect).to be_nil
+rescue
+  $logger.info ("Пользователь с логином #{login} уже существует")
+  sleep 1
+end
+
+When(/добавляю пользователя с некорректными данными$/) do
+  response = $rest_wrap.post('/users', login: '',
+                             name: '',
+                             surname: '',
+                             password: '',
+                             active: 1)
+  expect(response.inspect).to be_nil
+rescue
+  $logger.info("Пользователь с неверными данными не добавлен #{response}")
+  sleep 1
+end
+
+When(/изменяю параметры пользователя (\w+\.\w+) по логину на некорректные:$/) do |login, data_table|
+  user_data = data_table.raw
+  step %(нахожу пользователя с логином #{login})
+  user_id = @scenario_data.users_id[login]
+  if user_id.nil?
+    $logger.error("Пользователь с логином #{login} не найден")
+    next
+  end
+  name = user_data[0][1]
+  surname = user_data[1][1]
+  password = user_data[2][1]
+  response = $rest_wrap.put("/users/#{user_id}", {
+    name: name,
+    surname: surname,
+    password: password,
+    active: 1
+  })
+  expect(response.inspect).to be_nil
+rescue
+    $logger.info("Данные пользователя #{login} не обновлены #{response}")
+  sleep 1
+end
+
+When(/добавляю пользователя с длинной полей в (.+?) символов$/) do |length|
+  login = 'x' * length.to_i
+  name = 'x' * length.to_i
+  surname = 'x' * length.to_i
+  password = 'x' * length.to_i
+  response = $rest_wrap.post('/users', login: login,
+                             name: name,
+                             surname: surname,
+                             password: password,
+                             active: 1)
+  expect(response.inspect).to be_nil
+rescue
+  $logger.info("У полей стоит ограничение по символам")
+  sleep 1
+end
