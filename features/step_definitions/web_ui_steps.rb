@@ -97,15 +97,13 @@ When (/^ждем окончания скачивания$/) do
   total_timeout = 300
   timeout = 1
   start_time = Time.now
-  download_dir = @download_dir
-  filename = @filename
   temp_extension = '.part'
 
   loop do
     elapsed_time = Time.now - start_time
     break if elapsed_time > total_timeout
-    temp_files = Dir.glob(File.join(download_dir, "#{filename}.#{temp_extension}"))
-    final_files = Dir.glob(File.join(download_dir, filename)).select { |f| File.size(f) > 0 }
+    temp_files = Dir.glob(File.join(@download_dir, "#{@filename}.#{temp_extension}"))
+    final_files = Dir.glob(File.join(@download_dir, @filename)).select { |f| File.size(f) > 0 }
     if final_files.any? && temp_files.empty?
       $logger.info("Скачивание успешно #{final_files.first}")
       break
@@ -116,7 +114,7 @@ When (/^ждем окончания скачивания$/) do
       timeout = total_timeout
     end
   end
-  unless Dir.glob(File.join(download_dir, filename)).any? { |f| File.size(f) > 0 }
+  unless Dir.glob(File.join(@download_dir, @filename)).any? { |f| File.size(f) > 0 }
     raise "Скачивание файла не завершилось"
   end
 end
